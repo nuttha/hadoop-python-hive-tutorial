@@ -8,17 +8,17 @@ We're going to use it in our text processing, so make sure you have textblob in 
 
     sudo pip install textblob
 
-#### Install Java 7
+#### Install Java 8
 
     sudo apt-get install python-software-properties
     sudo add-apt-repository ppa:webupd8team/java
     sudo apt-get update
-    sudo apt-get install oracle-jdk7-installer
+    sudo apt-get install oracle-java8-installer
 
 The java install will ask a few straightforward questions, just answer
 them.
 
-####Check that java version is 1.7
+####Check that java version is 1.8
 
     java -version
 
@@ -54,15 +54,15 @@ known keys list)
 
 ####Download and Install Hadoop
 
-    wget http://psg.mtu.edu/pub/apache/hadoop/common/stable/hadoop-2.6.0.tar.gz
+    wget http://apache.mirrors.pair.com/hadoop/common/hadoop-3.0.0/hadoop-3.0.0.tar.gz
 
-    su irmak
+    su nuttha
 
 (switch to your own user, you’ll need some sudo here)
 
-    sudo tar xvzf hadoop-2.6.0.tar.gz
+    sudo tar xvzf hadoop-3.0.0.tar.gz
 
-    sudo mv hadoop-2.6.0 /usr/local/hadoop
+    sudo mv hadoop-3.0.0 /usr/local/hadoop
 
     cd /usr/local
 
@@ -83,7 +83,7 @@ and do not want to use another editor you can install emacs with
     export PATH=$PATH:$HADOOP_HOME/bin
     
     # Environment varibale for Java location
-    export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+    export JAVA_HOME=/usr/lib/jvm/java-8-oracle
     
     # Hadoop related aliases
     unalias fs &> /dev/null
@@ -99,7 +99,7 @@ terminal.:
     
 #### Create the place to put HDFS on and tell Hadoop where it is
 
-    su irmak
+    su nuttha
 
 (We need some more sudo stuff so switch back to yourself for now)
 
@@ -134,23 +134,6 @@ is used to determine the host, port, etc. for a filesystem.</description>
 </property>
 ```
 
-Ok now another one.
-
-    emacs /usr/local/hadoop/etc/hadoop/mapred-site.xml.template
-
-Between `< configuration >`  and `< /configuration >`  put this in:
-```xml
-<property>
-<name>mapred.job.tracker</name>
-<value>localhost:54311</value>
-      <description>The host and port that the MapReduce job tracker
-	  runs
-	        at.  If "local", then jobs are run in-process as a single
-			map
-			and reduce task.
-			</description>
-			</property>
-```
 And the last one
 
     emacs /usr/local/hadoop/etc/hadoop/hdfs-site.xml
@@ -166,13 +149,13 @@ is not specified in create time.</description>
 </property>
 ```
 
-Also tell hadoop where java 7 is
+Also tell hadoop where java 8 is
 
     emacs /usr/local/hadoop/etc/hadoop/hadoop-env.sh 
     
 And at the very end, append this line:
     
-    export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+    export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 Save, quit, and we're good.
 

@@ -11,14 +11,14 @@ $ cd
 Let's download Hive.
 
 ```bash
-$ wget http://mirror.cogentco.com/pub/apache/hive/hive-0.14.0/apache-hive-0.14.0-bin.tar.gz
+$ wget http://apache.mirrors.pair.com/hive/hive-2.3.2/apache-hive-2.3.2-bin.tar.gz
 ```
 This is a zipped file. Extract it.
 
 ```bash
-$ tar -xzvf apache-hive-0.14.0-bin.tar.gz 
+$ tar -xzvf apache-hive-2.3.2-bin.tar.gz 
 ```
-Now, in hduser's home directory, you have a directory called `apache-hive-0.14.0-bin`.
+Now, in hduser's home directory, you have a directory called `apache-hive-2.3.2-bin`.
 We are going to edit your `.bashrc` file to make an environment varible called HIVE_HOME
 so that Hadoop and Hive know where it lives (like we did with the Hadoop setup).
 
@@ -28,7 +28,7 @@ $ emacs ~/.bashrc
 To the end of the `.bashrc` file that we are editing, add the following lines
 
 ```bash
-export HIVE_HOME=/home/hduser/apache-hive-0.14.0-bin
+export HIVE_HOME=/home/hduser/apache-hive-2.3.2-bin
 export PATH=$PATH:$HIVE_HOME/bin
 ```
 Save and close. Now we need to run the `.bashrc` to make sure HIVE_HOME is defined.
@@ -50,6 +50,97 @@ $ hdfs dfs -mkdir -p /user/hive/warehouse
 $ hdfs dfs -chmod g+w /tmp
 $ hdfs dfs -chmod g+w /user/hive/warehouse
 ```
+Set Hadoop path in hive-env.sh
+
+```bash
+$ cd apache-hive-2.3.2-bin/
+$ emacs conf/hive-env.sh
+```
+Add the following lines
+
+```bash
+# Set HADOOP_HOME to point to a specific hadoop install directory
+export HADOOP_HOME=/home/hduser/hadoop-3.0.0
+
+export HADOOP_HEAPSIZE=512
+
+# Hive Configuration Directory can be controlled by:
+export HIVE_CONF_DIR=/home/hduser/apache-hive-2.3.2-bin/conf
+```
+Edit hive-site.xml
+```bash
+$ emacs conf/hive-site.xml
+```
+Add the following lines
+```bash
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?><!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements. See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<configuration>
+<property>
+<name>javax.jdo.option.ConnectionURL</name>
+<value>jdbc:derby:;databaseName=/home/edureka/apache-hive-2.1.0-bin/metastore_db;create=true</value>
+<description>
+JDBC connect string for a JDBC metastore.
+To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
+For example, jdbc:postgresql://myhost/db?ssl=true for postgres database.
+</description>
+</property>
+<property>
+<name>hive.metastore.warehouse.dir</name>
+<value>/user/hive/warehouse</value>
+<description>location of default database for the warehouse</description>
+</property>
+<property>
+<name>hive.metastore.uris</name>
+<value/>
+<description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+</property>
+<property>
+<name>javax.jdo.option.ConnectionDriverName</name>
+<value>org.apache.derby.jdbc.EmbeddedDriver</value>
+<description>Driver class name for a JDBC metastore</description>
+</property>
+<property>
+<name>javax.jdo.PersistenceManagerFactoryClass</name>
+<value>org.datanucleus.api.jdo.JDOPersistenceManagerFactory</value>
+<description>class implementing the jdo persistence</description>
+</property>
+</configuration>
+```
+By default, Hive uses Derby database. Initialize Derby database.
+```
+$ bin/schematool -initSchema -dbType derby
+```
+Note: https://stackoverflow.com/questions/35655306/hive-installation-issues-hive-metastore-database-is-not-initialized
+Before you run hive for the first time, run
+```
+schematool -initSchema -dbType derby
+```
+If you already ran hive and then tried to initSchema and it's failing:
+```
+mv metastore_db metastore_db.tmp
+```
+Re run
+```
+schematool -initSchema -dbType derby
+```
+Run hive again
+
 Aaand, your Hive is ready to rock your world. You can run it by typing
 
 ```
@@ -76,10 +167,10 @@ This is a zipped file with a bunch of csv files, each is a sql table.
 These tables are full of baseball statistics from 2013. Let's unzip this.
 First we need to switch back to a user with sudo powers so we can install unzip, 
 then switch back to hduser and unzip it.
-(Of course, switch `irmak` below with your own username)
+(Of course, switch `nuttha` below with your own username)
 
 ```bash
-$ su irmak
+$ su nuttha
 $ sudo apt-get install unzip
 $ su hduser
 $ mkdir baseballdata
@@ -198,17 +289,17 @@ abbeych01,1866,10,14,USA,NE,Falls City,1926,4,27,USA,CA,San Francisco,Charlie,Ab
 #### Upload data to Hive
 
 Indeed it's gone. Alright. Let's upload this to hive. First, we need to upload it to hdfs.
-(of course, change `irmak` to whichever directory you have in hdfs) 
+(of course, change `nuttha` to whichever directory you have in hdfs) 
 ```bash
-$ hdfs dfs -mkdir -p /user/irmak/baseballdata
-$ hdfs dfs -put baseballdata/Master.csv /user/irmak/baseballdata
+$ hdfs dfs -mkdir -p /user/nuttha/baseballdata
+$ hdfs dfs -put baseballdata/Master.csv /user/nuttha/baseballdata
 ```
 We created a new directory in hsfs and uploaded the csv to it.
 Let's make sure it's there.
 ```bash
-$ hdfs dfs -ls /user/irmak/baseballdata
+$ hdfs dfs -ls /user/nuttha/baseballdata
 Found 1 items
--rw-r--r--   1 hduser supergroup    2422684 2015-03-11 22:12 /user/irmak/baseballdata/Master.csv
+-rw-r--r--   1 hduser supergroup    2422684 2015-03-11 22:12 /user/nuttha/baseballdata/Master.csv
 ```
 It is. Awesome. Time to run hive
 ```bash
@@ -260,7 +351,7 @@ Time taken: 1.752 seconds
 ```
 And let's load the data
 ```sql
-hive> LOAD DATA INPATH '/user/irmak/baseballdata/Master.csv' OVERWRITE INTO TABLE Master;
+hive> LOAD DATA INPATH '/user/nuttha/baseballdata/Master.csv' OVERWRITE INTO TABLE Master;
 Loading data to table default.master
 Table default.master stats: [numFiles=1, numRows=0, totalSize=2422684, rawDataSize=0]
 OK
@@ -467,7 +558,7 @@ Let's remove the header and upload it to hdfs
 ```bash
 hive> exit;
 $ tail -n +2 baseballdata/Salaries.csv > tmp && mv tmp baseballdata/Salaries.csv
-$ hdfs dfs -put baseballdata/Salaries.csv /user/irmak/baseballdata
+$ hdfs dfs -put baseballdata/Salaries.csv /user/nuttha/baseballdata
 ```
 Switch to hive, create the table and load the data.
 ```sql
@@ -487,7 +578,7 @@ hive> CREATE TABLE IF NOT EXISTS Salaries
       STORED AS TEXTFILE;                                                                
 OK
 Time taken: 2.502 seconds
-hive> LOAD DATA INPATH '/user/irmak/baseballdata/Salaries.csv' OVERWRITE INTO TABLE Salaries;
+hive> LOAD DATA INPATH '/user/nuttha/baseballdata/Salaries.csv' OVERWRITE INTO TABLE Salaries;
 Loading data to table default.salaries
 Table default.salaries stats: [numFiles=1, numRows=0, totalSize=724918, rawDataSize=0]
 OK
