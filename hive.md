@@ -126,7 +126,7 @@ By default, Hive uses Derby database. Initialize Derby database.
 ```
 $ bin/schematool -initSchema -dbType derby
 ```
-Note: https://stackoverflow.com/questions/35655306/hive-installation-issues-hive-metastore-database-is-not-initialized
+Note 1: https://stackoverflow.com/questions/35655306/hive-installation-issues-hive-metastore-database-is-not-initialized
 Before you run hive for the first time, run
 ```
 schematool -initSchema -dbType derby
@@ -140,6 +140,13 @@ Re run
 schematool -initSchema -dbType derby
 ```
 Run hive again
+
+Note 2:
+https://stackoverflow.com/questions/22711364/java-lang-runtimeexceptionunable-to-instantiate-org-apache-hadoop-hive-metastor
+Looks like problem with your metastore. If you are using the default hive metastore embedded derby. Lock file would be there in case of abnormal exit. if you remove that lock file this issue would be solved
+```
+rm   metastore_db/*.lck
+```
 
 Aaand, your Hive is ready to rock your world. You can run it by typing
 
